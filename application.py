@@ -66,6 +66,10 @@ def index():
     #only by sending this page first will the client be connected to the socketio instance
     return render_template('index.html')
 
+@app.route('/game')
+def game():
+    return render_template('game.html')
+
 @socketio.on('connect', namespace='/test')
 def test_connect():
     # need visibility of the global thread object
