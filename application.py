@@ -34,6 +34,7 @@ socketio = SocketIO(app)
 
 #random number Generator Thread
 thread = Thread()
+thread2 = Thread()
 thread_stop_event = Event()
 
 class RandomThread(Thread):
@@ -58,6 +59,29 @@ class RandomThread(Thread):
     def run(self):
         self.randomNumberGenerator()
 
+class RandomThread2(Thread):
+    def __init__(self):
+        self.delay = 1
+        super(RandomThread2, self).__init__()
+
+    def randomNumberGenerator(self):
+        """
+        Generate a random number every 1 second and emit to a socketio instance (broadcast)
+        Ideally to be run in a separate thread?
+        """
+        #infinite loop of magical random numbers
+        print("Making random numbers")
+        while not thread_stop_event.isSet():
+            number = round(random()*10, 3)
+            ########################################################
+            # an emit should start for every time the target is hit.
+            socketio.emit('newnumber2', {'number': number}, namespace='/test')
+            sleep(number)
+
+    def run(self):
+        self.randomNumberGenerator()
+
+
 
 @app.route('/')
 def index():
@@ -76,6 +100,7 @@ def multiplayer():
 def test_connect():
     # need visibility of the global thread object
     global thread
+    global thread2
     print('Client connected')
 
     #Start the random number generator thread only if the thread has not been started before.
@@ -83,6 +108,10 @@ def test_connect():
         print("Starting Thread")
         thread = RandomThread()
         thread.start()
+    if not thread2.isAlive():
+        print("Starting Thread2")
+        thread2 = RandomThread2()
+        thread2.start()
 
 @socketio.on('disconnect', namespace='/test')
 def test_disconnect():

@@ -11,6 +11,7 @@ var resumeBtnEl
 var isPaused=false;
 
 var score = 0
+var score2 = 0
 
 var GameOverSound = new Audio('static/timeup.wav')
 var query
@@ -61,17 +62,25 @@ function countHits(){
     score = score+1;
     $('#score').html(score);
   });
+  //receive details from server
+  socket.on('newnumber2', function(msg) {
+    score2 = score2+1;
+    $('#score2').html(score2);
+  });
+
 }
 
 function startCountDown() {
   var countdown = query.time[0];
   score = 0;
+  score2 = 0;
   $('#score').html(score);
+  $('#score2').html(score2);
 
   // show stop / hide start
   startBtnEl.style.display = "none";
-  stopBtnEl.style.display = "flex";
-  pauseBtnEl.style.display = "flex";
+  stopBtnEl.style.display = "";
+  pauseBtnEl.style.display = "";
 
   countHits();
 
@@ -99,7 +108,7 @@ function stopCountDown(){
   socket.removeAllListeners('newnumber');
 
   // show stop / hide start
-  startBtnEl.style.display = "flex";
+  startBtnEl.style.display = "";
   stopBtnEl.style.display = "none";
   pauseBtnEl.style.display = "none";
   resumeBtnEl.style.display = "none";
@@ -110,7 +119,7 @@ function pauseCountDown(){
   isPaused = true;
   // show stop / hide start
   pauseBtnEl.style.display = "none";
-  resumeBtnEl.style.display = "flex";
+  resumeBtnEl.style.display = "";
 }
 
 function resumeCountDown(){
@@ -118,6 +127,6 @@ function resumeCountDown(){
   isPaused = false;
 
   // show stop / hide start
-  pauseBtnEl.style.display = "flex";
+  pauseBtnEl.style.display = "";
   resumeBtnEl.style.display = "none";
 }
