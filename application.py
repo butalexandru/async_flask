@@ -15,9 +15,6 @@ Updated 13th April 2018
 
 """
 
-
-
-
 # Start with a basic flask app webpage.
 from flask_socketio import SocketIO, emit
 from flask import Flask, render_template, url_for, copy_current_request_context
@@ -53,9 +50,10 @@ class RandomThread(Thread):
         print("Making random numbers")
         while not thread_stop_event.isSet():
             number = round(random()*10, 3)
-            print(number)
+            ########################################################
+            # an emit should start for every time the target is hit.
             socketio.emit('newnumber', {'number': number}, namespace='/test')
-            sleep(self.delay)
+            sleep(number)
 
     def run(self):
         self.randomNumberGenerator()
@@ -66,9 +64,13 @@ def index():
     #only by sending this page first will the client be connected to the socketio instance
     return render_template('index.html')
 
-@app.route('/game')
-def game():
-    return render_template('game.html')
+@app.route('/singleplayer')
+def singleplayer():
+    return render_template('singleplayer.html')
+
+@app.route('/multiplayer')
+def multiplayer():
+    return render_template('multiplayer.html')
 
 @socketio.on('connect', namespace='/test')
 def test_connect():
@@ -88,4 +90,5 @@ def test_disconnect():
 
 
 if __name__ == '__main__':
+    print('main me')
     socketio.run(app)
