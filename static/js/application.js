@@ -106,6 +106,7 @@ function startCountDown() {
 function stopCountDown(){
   clearInterval(countdownInterval);
   socket.removeAllListeners('newnumber');
+  socket.removeAllListeners('newnumber2');
 
   // show stop / hide start
   startBtnEl.style.display = "";
@@ -116,6 +117,7 @@ function stopCountDown(){
 
 function pauseCountDown(){
   socket.removeAllListeners('newnumber');
+  socket.removeAllListeners('newnumber2');
   isPaused = true;
   // show stop / hide start
   pauseBtnEl.style.display = "none";

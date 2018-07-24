@@ -22,12 +22,11 @@ from random import random
 from time import sleep
 from threading import Thread, Event
 
-
 __author__ = 'slynn'
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
-app.config['DEBUG'] = True
+app.config['DEBUG'] = False
 
 #turn the flask app into a socketio app
 socketio = SocketIO(app)
@@ -72,7 +71,7 @@ class RandomThread2(Thread):
         #infinite loop of magical random numbers
         print("Making random numbers")
         while not thread_stop_event.isSet():
-            number = round(random()*10, 3)
+            number = round(random()*3, 3)
             ########################################################
             # an emit should start for every time the target is hit.
             socketio.emit('newnumber2', {'number': number}, namespace='/test')
@@ -119,5 +118,4 @@ def test_disconnect():
 
 
 if __name__ == '__main__':
-    print('main me')
     socketio.run(app)
