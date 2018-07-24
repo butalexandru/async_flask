@@ -25,7 +25,7 @@ $(document).ready(function(){
   pauseBtnEl = document.getElementById('pauseBtnEl');
   resumeBtnEl = document.getElementById('resumeBtnEl');
   //connect to the socket server.
-  socket = io.connect('http://' + document.domain + ':' + location.port + '/test');
+  socket = io.connect('http://' + document.domain + ':' + location.port + '/target');
   $('#countdown-number').html(query.time[0]);
 })
 
@@ -58,12 +58,12 @@ function param() {
 
 function countHits(){
   //receive details from server
-  socket.on('newnumber', function(msg) {
+  socket.on('hit_1', function(msg) {
     score = score+1;
     $('#score').html(score);
   });
   //receive details from server
-  socket.on('newnumber2', function(msg) {
+  socket.on('hit_2', function(msg) {
     score2 = score2+1;
     $('#score2').html(score2);
   });

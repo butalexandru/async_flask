@@ -9,7 +9,7 @@ from flask_socketio import SocketIO, emit
 from flask import Flask, render_template, url_for, copy_current_request_context
 from threading import Thread, Event
 
-import targetInterface
+from targetInterface import TargetInterface
 
 __author__ = 'Alexandru But'
 
@@ -38,11 +38,12 @@ def target_connect():
     # need visibility of the global thread object
     print('Client connected')
 
-    target = TargetInterface(socketio.emit('hit_1', {'hits': 1}, namespace='/target'), socketio.emit('hit_2', {'hits': 1}, namespace='/target'))
 
-@socketio.on('disconnect', namespace='/test')
-def test_disconnect():
+@socketio.on('disconnect', namespace='/target')
+def target_disconnect():
     print('Client disconnected')
 
 if __name__ == '__main__':
-    socketio.run(app)
+    print('1')
+    target = TargetInterface(socketio.emit('hit_1', {'hits': 1}, namespace='/target'), socketio.emit('hit_2', {'hits': 1}, namespace='/target'))
+    socketio.run(app, host='192.168.4.1')
