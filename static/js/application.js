@@ -71,6 +71,7 @@ function countHits(){
 }
 
 function startCountDown() {
+    console.log("start");
   var countdown = query.time[0];
   score = 0;
   score2 = 0;
@@ -87,6 +88,7 @@ function startCountDown() {
   countdownNumberEl.textContent = countdown;
   //countdownCircleEl.style.animationDuration = countdown+'s';
   //countdownCircleEl.style.animationPlayState = 'running';
+  console.log(countdown)
 
   countdownInterval = setInterval(function() {
     if(!isPaused){
