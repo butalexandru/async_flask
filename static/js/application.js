@@ -58,16 +58,14 @@ function param() {
 
 function countHits(){
   //receive details from server
-  socket.on('newnumber', function(msg) {
-    score = score+1;
-    $('#score').html(score);
+  socket.on('newnumber', function(score) {
+    console.log(score);
+    $('#score').html(score.number);
   });
   //receive details from server
-  socket.on('newnumber2', function(msg) {
-    score2 = score2+1;
-    $('#score2').html(score2);
+  socket.on('newnumber2', function(score) {
+    $('#score2').html(score.number);
   });
-
 }
 
 function startCountDown() {
@@ -77,6 +75,8 @@ function startCountDown() {
   score2 = 0;
   $('#score').html(score);
   $('#score2').html(score2);
+
+  socket.emit('start', { data: 'data' });
 
   // show stop / hide start
   startBtnEl.style.display = "none";
@@ -106,6 +106,7 @@ function startCountDown() {
 }
 
 function stopCountDown(){
+  socket.emit('stop', { data: 'data' });
   clearInterval(countdownInterval);
   socket.removeAllListeners('newnumber');
   socket.removeAllListeners('newnumber2');

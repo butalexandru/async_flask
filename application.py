@@ -34,12 +34,12 @@ socketio = SocketIO(app)
 #random number Generator Thread
 thread = Thread()
 thread2 = Thread()
-thread_stop_event = Event()
 
 class RandomThread(Thread):
     def __init__(self):
         self.delay = 1
         super(RandomThread, self).__init__()
+        self.thread_stop_event = Event()
 
     def randomNumberGenerator(self):
         """
@@ -48,7 +48,7 @@ class RandomThread(Thread):
         """
         #infinite loop of magical random numbers
         print("Making random numbers")
-        while not thread_stop_event.isSet():
+        while not self.thread_stop_event.isSet():
             number = round(random()*10, 3)
             ########################################################
             # an emit should start for every time the target is hit.
@@ -59,8 +59,9 @@ class RandomThread(Thread):
         self.randomNumberGenerator()
 
 class RandomThread2(Thread):
-    def __init__(self):
+    def __init__(self,):
         self.delay = 1
+        self.thread_stop_event = Event()
         super(RandomThread2, self).__init__()
 
     def randomNumberGenerator(self):
@@ -70,7 +71,7 @@ class RandomThread2(Thread):
         """
         #infinite loop of magical random numbers
         print("Making random numbers")
-        while not thread_stop_event.isSet():
+        while not self.thread_stop_event.isSet():
             number = round(random()*3, 3)
             ########################################################
             # an emit should start for every time the target is hit.
@@ -79,8 +80,6 @@ class RandomThread2(Thread):
 
     def run(self):
         self.randomNumberGenerator()
-
-
 
 @app.route('/')
 def index():
@@ -97,10 +96,18 @@ def multiplayer():
 
 @socketio.on('connect', namespace='/test')
 def test_connect():
-    # need visibility of the global thread object
+    print('Client connected')
+
+@socketio.on('disconnect', namespace='/test')
+def test_disconnect():
+    print('Client disconnected')
+
+@socketio.on('start', namespace='/test')
+def startScoring(data):
+     # need visibility of the global thread object
     global thread
     global thread2
-    print('Client connected')
+    print('Start scoring')
 
     #Start the random number generator thread only if the thread has not been started before.
     if not thread.isAlive():
@@ -112,10 +119,20 @@ def test_connect():
         thread2 = RandomThread2()
         thread2.start()
 
-@socketio.on('disconnect', namespace='/test')
-def test_disconnect():
-    print('Client disconnected')
+@socketio.on('stop', namespace='/test')
+def stopScoring(data):
+     # need visibility of the global thread object
+    global thread
+    global thread2
+    print('Stop scoring')
 
+    #Start the random number generator thread only if the thread has not been started before.
+    if thread.isAlive():
+        print("Stopping Thread")
+        thread.thread_stop_event.set()
+    if thread2.isAlive():
+        print("Stopping Thread2")
+        thread2.thread_stop_event.set()
 
 if __name__ == '__main__':
     socketio.run(app)
