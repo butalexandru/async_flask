@@ -135,4 +135,4 @@ def stopScoring(data):
         thread2.thread_stop_event.set()
 
 if __name__ == '__main__':
-    socketio.run(app)
+    socketio.run(app, host='0.0.0.0')

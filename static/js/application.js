@@ -10,9 +10,6 @@ var resumeBtnEl
 
 var isPaused=false;
 
-var score = 0
-var score2 = 0
-
 var GameOverSound = new Audio('static/timeup.wav')
 var query
 
@@ -25,8 +22,13 @@ $(document).ready(function(){
   pauseBtnEl = document.getElementById('pauseBtnEl');
   resumeBtnEl = document.getElementById('resumeBtnEl');
   //connect to the socket server.
-  socket = io.connect('http://' + document.domain + ':' + location.port + '/test');
+  socket = io.connect('http://' + document.domain + ':' + location.port + '/target');
   $('#countdown-number').html(query.time[0]);
+  //receive details from server
+  socket.on('score', function(score) {
+    $('#score0').html(score.t0);
+    $('#score1').html(score.t1);
+  });
 })
 
 function ptq(q)
@@ -56,25 +58,8 @@ function param() {
   return ptq(location.search.substring(1).replace(/\+/g, ' '));
 }
 
-function countHits(){
-  //receive details from server
-  socket.on('newnumber', function(score) {
-    console.log(score);
-    $('#score').html(score.number);
-  });
-  //receive details from server
-  socket.on('newnumber2', function(score) {
-    $('#score2').html(score.number);
-  });
-}
-
 function startCountDown() {
-    console.log("start");
   var countdown = query.time[0];
-  score = 0;
-  score2 = 0;
-  $('#score').html(score);
-  $('#score2').html(score2);
 
   socket.emit('start', { data: 'data' });
 
@@ -83,12 +68,9 @@ function startCountDown() {
   stopBtnEl.style.display = "";
   pauseBtnEl.style.display = "";
 
-  countHits();
-
   countdownNumberEl.textContent = countdown;
   //countdownCircleEl.style.animationDuration = countdown+'s';
   //countdownCircleEl.style.animationPlayState = 'running';
-  console.log(countdown)
 
   countdownInterval = setInterval(function() {
     if(!isPaused){
@@ -119,6 +101,7 @@ function stopCountDown(){
 }
 
 function pauseCountDown(){
+  socket.emit('pause', { data: 'data' });
   socket.removeAllListeners('newnumber');
   socket.removeAllListeners('newnumber2');
   isPaused = true;
@@ -128,7 +111,7 @@ function pauseCountDown(){
 }
 
 function resumeCountDown(){
-  countHits();
+  socket.emit('resume', { data: 'data' });
   isPaused = false;
 
   // show stop / hide start
