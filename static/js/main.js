@@ -5,3 +5,7 @@ function multiplayer() {
 function singleplayer() {
   window.location.href = '/singleplayer?time=' + document.getElementById("time_s").value;
 }
+
+function view(team) {
+  window.location.href = '/view?team=' + team;
+}

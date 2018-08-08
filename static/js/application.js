@@ -21,14 +21,78 @@ $(document).ready(function(){
   stopBtnEl = document.getElementById('stopBtnEl');
   pauseBtnEl = document.getElementById('pauseBtnEl');
   resumeBtnEl = document.getElementById('resumeBtnEl');
+  var targetFeedbackEl = document.getElementById('target_feedback');
   //connect to the socket server.
   socket = io.connect('http://' + document.domain + ':' + location.port + '/target');
-  $('#countdown-number').html(query.time[0]);
+  $('#countdown-number').html('-');
+  var i;
+  var circles = [];
+  if (window.location.pathname.includes('view')) {
+    // init the target display
+    var team = query.team[0];
+    $('#team_name').html(team);
+    for (i=0; i<5; i++) {
+      circles[i] = document.createElement('div');
+      circles[i].className = "circle";
+      targetFeedbackEl.appendChild(circles[i]);
+    }
+  } else {
+    socket.on('state', function(data) {
+      var on = data['on']
+      var pause = data['pause']
+      if (on) {
+        startBtnEl.style.display = "none";
+        stopBtnEl.style.display = "";
+        pauseBtnEl.style.display = "";
+        if (pause) {
+          pauseBtnEl.style.display = "none";
+          resumeBtnEl.style.display = "";
+        } else {
+          pauseBtnEl.style.display = "";
+          resumeBtnEl.style.display = "none";
+        }
+      } else {
+        startBtnEl.style.display = "";
+        stopBtnEl.style.display = "none";
+        pauseBtnEl.style.display = "none";
+        resumeBtnEl.style.display = "none";
+      }
+    })
+  }
   //receive details from server
   socket.on('score', function(score) {
-    $('#score0').html(score.t0);
-    $('#score1').html(score.t1);
+    if (window.location.pathname.includes('player')) {
+      $('#score0').html(score.t0);
+      $('#score1').html(score.t1);
+    } else {
+      var targetIndex = 0;
+      if (team == 1) {
+        $('#score').html(score.t0);
+        targetIndex = score.t0%5;
+      } else {
+        $('#score').html(score.t1);
+        targetIndex = score.t1%5;
+      }
+      for (i=0; i<5; i++) {
+        if (i==targetIndex){
+          circles[i].className = "circle hit";
+	} else {
+          circles[i].className = "circle";
+        }
+      }
+    }
   });
+
+  socket.on('countdown', function(data) {
+    countdown = data['countdown'];
+    $('#countdown-number').html(countdown);
+    if (countdown == 0 && window.location.pathname.includes('player')) {
+      stopCountDown();
+      GameOverSound.play();
+    }
+  });
+
+  socket.emit('init', { data: 'data' });
 })
 
 function ptq(q)
@@ -61,53 +125,30 @@ function param() {
 function startCountDown() {
   var countdown = query.time[0];
 
-  socket.emit('start', { data: 'data' });
+  socket.emit('start', { 'countdown': countdown});
 
   // show stop / hide start
-  startBtnEl.style.display = "none";
-  stopBtnEl.style.display = "";
-  pauseBtnEl.style.display = "";
-
-  countdownNumberEl.textContent = countdown;
-  //countdownCircleEl.style.animationDuration = countdown+'s';
-  //countdownCircleEl.style.animationPlayState = 'running';
-
-  countdownInterval = setInterval(function() {
-    if(!isPaused){
-      countdown = --countdown;
-    }
-    if (countdown == 0){
-      stopCountDown();
-    }
-    if (countdown == 1){
-      GameOverSound.play();
-    }
-  
-    countdownNumberEl.textContent = countdown;
-  }, 1000);
+  //startBtnEl.style.display = "none";
+  //stopBtnEl.style.display = "";
+  //pauseBtnEl.style.display = "";
 }
 
 function stopCountDown(){
   socket.emit('stop', { data: 'data' });
-  clearInterval(countdownInterval);
-  socket.removeAllListeners('newnumber');
-  socket.removeAllListeners('newnumber2');
 
   // show stop / hide start
-  startBtnEl.style.display = "";
-  stopBtnEl.style.display = "none";
-  pauseBtnEl.style.display = "none";
-  resumeBtnEl.style.display = "none";
+  //startBtnEl.style.display = "";
+  //stopBtnEl.style.display = "none";
+  //pauseBtnEl.style.display = "none";
+  //resumeBtnEl.style.display = "none";
 }
 
 function pauseCountDown(){
   socket.emit('pause', { data: 'data' });
-  socket.removeAllListeners('newnumber');
-  socket.removeAllListeners('newnumber2');
   isPaused = true;
   // show stop / hide start
-  pauseBtnEl.style.display = "none";
-  resumeBtnEl.style.display = "";
+  //pauseBtnEl.style.display = "none";
+  //resumeBtnEl.style.display = "";
 }
 
 function resumeCountDown(){
@@ -115,6 +156,6 @@ function resumeCountDown(){
   isPaused = false;
 
   // show stop / hide start
-  pauseBtnEl.style.display = "";
-  resumeBtnEl.style.display = "none";
+  //pauseBtnEl.style.display = "";
+  //resumeBtnEl.style.display = "none";
 }
